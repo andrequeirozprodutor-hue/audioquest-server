@@ -54,11 +54,29 @@ io.on("connection", (socket) => {
       role
     });
 
-    socket.emit("room-joined", {
-      room,
-      peerId: socket.id,
-      role
+    
+const existingPeers = [];
+
+for (const peerId of io.sockets.adapter.rooms.get(room) || []) {
+  if (peerId === socket.id) continue;
+
+  const peer = io.sockets.sockets.get(peerId);
+
+  if (peer) {
+    existingPeers.push({
+      peerId: peer.id,
+      role: peer.data.role
     });
+  }
+}
+
+socket.emit("room-joined", {
+  room,
+  peerId: socket.id,
+  role,
+  peers: existingPeers
+});
+
 
     console.log(`${role} entrou na sala ${room}`);
   });
